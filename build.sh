@@ -174,8 +174,20 @@ function choices() {
 ##----------------------------------------------------------##
 # Compilation process
 function compile() {
-    # Make kernel	
-    make O=out CC=clang ARCH=arm64 $DEFCONFIG $KSU_CONFIG savedefconfig
+
+    read -p "Do you want to modify .config? If unsure, say N. (Y/N) " MODIFY_CONFIG
+    case $MODIFY_CONFIG in
+        [yY] )
+	    echo "Preparing .config..."
+    	    make O=out CC=clang ARCH=arm64 $DEFCONFIG $KSU_CONFIG menuconfig savedefconfig
+            ;;
+        [nN] )
+	    echo "Saving configs..."
+    	    make O=out CC=clang ARCH=arm64 $DEFCONFIG $KSU_CONFIG savedefconfig
+            ;;
+    esac
+
+    
     make -kj$(nproc --all) O=out \
     ARCH=arm64 \
     LLVM=1 \
