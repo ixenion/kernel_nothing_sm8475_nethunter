@@ -13,6 +13,7 @@ do.cleanuponabort=0
 device.name1=Pong
 device.name2=PongIND
 device.name3=PongEEA
+device.name4=pong
 '; } # end properties
 
 # boot image installation
