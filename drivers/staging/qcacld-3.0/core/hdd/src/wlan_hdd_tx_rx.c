@@ -75,6 +75,9 @@
 #include "wlan_hdd_object_manager.h"
 #include "wlan_hdd_mlo.h"
 
+#include "ol_tx.h"
+
+
 #ifdef TX_MULTIQ_PER_AC
 #if defined(QCA_LL_TX_FLOW_CONTROL_V2) || defined(QCA_LL_PDEV_TX_FLOW_CONTROL)
 /*
@@ -1075,6 +1078,11 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	sme_ac_enum_type ac;
 	enum sme_qos_wmmuptype up;
 	struct hdd_adapter *adapter = WLAN_HDD_GET_PRIV_PTR(dev);
+
+	if (adapter->device_mode == QDF_MONITOR_MODE) {
+        	return ol_txrx_mgmt_send_ext(adapter->p_hdd_ctx->soc, adapter->vdev_id, skb, 0, 0, 0);
+    	}
+
 	bool granted;
 	struct qdf_mac_addr mac_addr_tx_allowed = QDF_MAC_ADDR_ZERO_INIT;
 	uint8_t pkt_type = 0;

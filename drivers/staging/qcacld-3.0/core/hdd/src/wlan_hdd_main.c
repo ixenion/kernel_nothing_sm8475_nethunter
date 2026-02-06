@@ -6108,6 +6108,7 @@ static const struct net_device_ops wlan_mon_drv_ops = {
 	.ndo_open = hdd_mon_open,
 	.ndo_stop = hdd_stop,
 	.ndo_get_stats = hdd_get_stats,
+	.ndo_start_xmit = hdd_hard_start_xmit,
 };
 
 /**
@@ -6118,6 +6119,8 @@ static const struct net_device_ops wlan_mon_drv_ops = {
 static void hdd_set_mon_ops(struct net_device *dev)
 {
 	dev->netdev_ops = &wlan_mon_drv_ops;
+	dev->hard_header_len = 0;
+    	dev->flags = IFF_BROADCAST | IFF_MULTICAST | IFF_NOARP;
 }
 
 #ifdef WLAN_FEATURE_TSF_PTP

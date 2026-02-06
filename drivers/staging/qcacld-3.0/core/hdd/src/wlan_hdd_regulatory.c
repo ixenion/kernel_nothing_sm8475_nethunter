@@ -1184,7 +1184,7 @@ static void fill_wiphy_channel(struct ieee80211_channel *wiphy_chan,
 	if (cur_chan->chan_flags & REGULATORY_CHAN_DISABLED)
 		wiphy_chan->flags  |= IEEE80211_CHAN_DISABLED;
 	if (cur_chan->chan_flags & REGULATORY_CHAN_NO_IR)
-		wiphy_chan->flags  |= IEEE80211_CHAN_NO_IR;
+		wiphy_chan->flags  |= 0;
 	if (cur_chan->chan_flags & REGULATORY_CHAN_RADAR)
 		wiphy_chan->flags  |= IEEE80211_CHAN_RADAR;
 	if (cur_chan->chan_flags & REGULATORY_CHAN_NO_OFDM)
