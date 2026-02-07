@@ -75,7 +75,14 @@
 #include "wlan_hdd_object_manager.h"
 #include "wlan_hdd_mlo.h"
 
-#include "ol_tx.h"
+#include "wlan_objmgr_psoc_obj.h"
+//#include "ol_tx.h"
+
+
+//struct cdp_soc_t; // опционально, для Clang
+//extern void ol_txrx_mgmt_send_ext(void *soc, uint8_t vdev_id, struct sk_buff *skb, 
+//                                 uint32_t action, uint32_t flags, uint16_t seq);
+
 
 
 #ifdef TX_MULTIQ_PER_AC
@@ -1078,11 +1085,6 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	sme_ac_enum_type ac;
 	enum sme_qos_wmmuptype up;
 	struct hdd_adapter *adapter = WLAN_HDD_GET_PRIV_PTR(dev);
-
-	if (adapter->device_mode == QDF_MONITOR_MODE) {
-        	return ol_txrx_mgmt_send_ext(adapter->p_hdd_ctx->soc, adapter->vdev_id, skb, 0, 0, 0);
-    	}
-
 	bool granted;
 	struct qdf_mac_addr mac_addr_tx_allowed = QDF_MAC_ADDR_ZERO_INIT;
 	uint8_t pkt_type = 0;
@@ -1094,6 +1096,26 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	bool is_dhcp = false;
 	struct hdd_tx_rx_stats *stats = &adapter->hdd_stats.tx_rx_stats;
 	int cpu = qdf_get_smp_processor_id();
+
+	/*
+	if (adapter->device_mode == QDF_MONITOR_MODE) {
+		struct cdp_soc_t *soc = (struct cdp_soc_t *)wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
+		ol_txrx_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
+		return;
+	}
+	*/
+	/*
+	if (adapter->device_mode == QDF_MONITOR_MODE) {
+		void *soc = wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
+		ol_txrx_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
+		return;
+	}
+	*/
+	if (adapter->device_mode == QDF_MONITOR_MODE) {
+		void *soc = wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
+		cdp_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
+		return;
+	}
 
 #ifdef QCA_WIFI_FTM
 	if (hdd_get_conparam() == QDF_GLOBAL_FTM_MODE) {
