@@ -76,14 +76,6 @@
 #include "wlan_hdd_mlo.h"
 
 #include "wlan_objmgr_psoc_obj.h"
-//#include "ol_tx.h"
-
-
-//struct cdp_soc_t; // опционально, для Clang
-//extern void ol_txrx_mgmt_send_ext(void *soc, uint8_t vdev_id, struct sk_buff *skb, 
-//                                 uint32_t action, uint32_t flags, uint16_t seq);
-
-
 
 #ifdef TX_MULTIQ_PER_AC
 #if defined(QCA_LL_TX_FLOW_CONTROL_V2) || defined(QCA_LL_PDEV_TX_FLOW_CONTROL)
@@ -1096,26 +1088,36 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	bool is_dhcp = false;
 	struct hdd_tx_rx_stats *stats = &adapter->hdd_stats.tx_rx_stats;
 	int cpu = qdf_get_smp_processor_id();
+	int result;
 
-	/*
-	if (adapter->device_mode == QDF_MONITOR_MODE) {
-		struct cdp_soc_t *soc = (struct cdp_soc_t *)wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
-		ol_txrx_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
-		return;
-	}
-	*/
-	/*
 	if (adapter->device_mode == QDF_MONITOR_MODE) {
 		void *soc = wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
-		ol_txrx_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
+		if (soc && skb->len > 24) {
+			/* Check for Radiotap header (version 0x00) */
+			if (skb->data[0] == 0x00) {
+				uint16_t rt_len = *(uint16_t *)(skb->data + 2);
+				if (rt_len < skb->len) {
+					printk(KERN_INFO "QCACLD: Stripping radiotap %d bytes, original len: %d\n", rt_len, skb->len);
+					skb_pull(skb, rt_len);
+				}
+			}
+
+			printk(KERN_INFO "QCACLD: Injection attempt! vdev_id: %d, frame_len: %d\n", adapter->vdev_id, skb->len);
+
+			/* Send into CDP layer */
+			//result = cdp_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
+			result = cdp_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0x01, 0);
+			//if (result != 0) {
+			//	dev_kfree_skb_any(skb); // Освобождаем только если прошивка НЕ взяла пакет
+			//}
+			printk(KERN_INFO "QCACLD: cdp_mgmt_send_ext returned: %d\n", result);
+		}
+
+		/* We're freeing the buffer because we didn't put it on the shared stack. */
+		dev_kfree_skb_any(skb);
 		return;
 	}
-	*/
-	if (adapter->device_mode == QDF_MONITOR_MODE) {
-		void *soc = wlan_psoc_get_dp_handle(adapter->hdd_ctx->psoc);
-		cdp_mgmt_send_ext(soc, adapter->vdev_id, skb, 0, 0, 0);
-		return;
-	}
+
 
 #ifdef QCA_WIFI_FTM
 	if (hdd_get_conparam() == QDF_GLOBAL_FTM_MODE) {
@@ -1400,6 +1402,8 @@ drop_pkt_accounting:
  */
 netdev_tx_t hdd_hard_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
 {
+	printk(KERN_INFO "QCACLD: hdd_hard_start_xmit TOP! dev:%s, len:%d, type:%d\n",
+           net_dev->name, skb->len, net_dev->type);
 	hdd_dp_ssr_protect();
 
 	__hdd_hard_start_xmit(skb, net_dev);

@@ -3135,6 +3135,11 @@ static int hdd_mon_open(struct net_device *net_dev)
 
 	osif_vdev_sync_trans_stop(vdev_sync);
 
+	// UNBLOCK:
+	netif_carrier_on(net_dev); 
+	netif_tx_start_all_queues(net_dev);
+	netif_wake_queue(net_dev);
+
 	return errno;
 }
 #endif
@@ -6120,7 +6125,12 @@ static void hdd_set_mon_ops(struct net_device *dev)
 {
 	dev->netdev_ops = &wlan_mon_drv_ops;
 	dev->hard_header_len = 0;
-    	dev->flags = IFF_BROADCAST | IFF_MULTICAST | IFF_NOARP;
+
+	dev->addr_len = ETH_ALEN;
+	//dev->flags = IFF_BROADCAST | IFF_MULTICAST | IFF_NOARP | IFF_UP | IFF_RUNNING;
+	dev->flags = IFF_BROADCAST | IFF_MULTICAST | IFF_NOARP;
+
+	dev->type = ARPHRD_IEEE80211_RADIOTAP;	// Point that it's monito rwith radiotap.
 }
 
 #ifdef WLAN_FEATURE_TSF_PTP
