@@ -186,7 +186,6 @@ function compile() {
     	    make O=out CC=clang ARCH=arm64 $DEFCONFIG $KSU_CONFIG savedefconfig
             ;;
     esac
-
     
     make -kj$(nproc --all) O=out \
     ARCH=arm64 \

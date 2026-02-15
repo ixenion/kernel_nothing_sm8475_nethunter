@@ -5,9 +5,18 @@ Nethunter ready kernel source for Nothing Phone 2.
 sudo apt install make gcc zlib1g zlib1g-dev libssl-dev flex bison build-essential libncurses-dev zstd cpio zip
 ```
 
-2. Make shure python is available by `python --version`. If not:
+2. Make shure python is available by `python --version`. If not, but there is python3:
 ```shell
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+```
+
+3. If building under WSL2 check that env PATH doesnt contain any `'(' or ')'`
+```shell
+env | grep "("
+export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v '/mnt/c/' | tr '\n' ':')
+env | grep "("
+
+# Dont worry, it will be restored after VM reboot.
 ```
 
 3. For kernel source compilation use:
@@ -66,22 +75,37 @@ this config contains basic nethunter setups and drivers for:
     - Digital TV support
     - Software defined radio support
 
+Then press <save> and enter .config.
+The config will appear at out/.config
 
-Enable vDSO for 32-bit applications (COMPAT_VDSO) [Y/n/?] (NEW) Y
-Compile the 32-bit vDSO for Thumb-2 mode (THUMB2_COMPAT_VDSO) [Y/n/?] (NEW) Y
+Then choose default answers:
 
-Link Time Optimization (LTO)
-> 1. None (LTO_NONE)
-  2. Clang Full LTO (EXPERIMENTAL) (LTO_CLANG_FULL) (NEW)
-  3. Clang ThinLTO (EXPERIMENTAL) (LTO_CLANG_THIN) (NEW)
-choice[1-3?]: 3
-
-Use Clang's Control Flow Integrity (CFI) (CFI_CLANG) [N/y/?] (NEW) N
-Use RELR relocation packing (RELR) [Y/n/?] (NEW) Y
+    Kernel support for 32-bit EL0 (COMPAT) [Y/n/?] y
+      Enable kuser helpers page for 32-bit applications (KUSER_HELPERS) [Y/n/?] y
+      Enable vDSO for 32-bit applications (COMPAT_VDSO) [Y/n/?] (NEW) 
+        Compile the 32-bit vDSO for Thumb-2 mode (THUMB2_COMPAT_VDSO) [Y/n/?] (NEW) 
+    *
+    * General architecture-dependent options
+    *
+    Optimize very unlikely/likely branches (JUMP_LABEL) [Y/n/?] y
+      Static key selftest (STATIC_KEYS_SELFTEST) [N/y/?] n
+    Enable seccomp to safely execute untrusted bytecode (SECCOMP) [Y/n/?] y
+    Stack Protector buffer overflow detection (STACKPROTECTOR) [Y/n/?] y
+      Strong Stack Protector (STACKPROTECTOR_STRONG) [Y/n/?] y
+    Clang Shadow Call Stack (SHADOW_CALL_STACK) [Y/n/?] y
+    Link Time Optimization (LTO)
+    > 1. None (LTO_NONE)
+      2. Clang Full LTO (EXPERIMENTAL) (LTO_CLANG_FULL) (NEW)
+      3. Clang ThinLTO (EXPERIMENTAL) (LTO_CLANG_THIN) (NEW)
+    choice[1-3?]: 3
+    Use Clang's Control Flow Integrity (CFI) (CFI_CLANG) [N/y/?] (NEW) 
+    Enable LLVM's polyhedral loop optimizer (Polly) (LLVM_POLLY) [Y/n/?] y
+    Number of bits to use for ASLR of mmap base address (ARCH_MMAP_RND_BITS) [18] 18
+    Number of bits to use for ASLR of mmap base address for compatible applications (ARCH_MMAP_RND_COMPAT_BITS) [11] 11
+    Provide system calls for 32-bit time_t (COMPAT_32BIT_TIME) [Y/n/?] y
+    Use a virtually-mapped stack (VMAP_STACK) [Y/n/?] y
+    Use RELR relocation packing (RELR) [Y/n/?] (NEW) 
 ```
-
-
-
 
 
 
