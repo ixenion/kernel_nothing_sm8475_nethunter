@@ -5,6 +5,19 @@ EXTRA_CFLAGS += -O1
 #EXTRA_CFLAGS += -Wall
 #EXTRA_CFLAGS += -Wextra
 #EXTRA_CFLAGS += -Werror
+
+EXTRA_CFLAGS += -w
+ccflags-y += -I$(srctree)/$(src)/include \
+             -I$(srctree)/$(src)/os_dep/include \
+             -I$(srctree)/$(src)/core/crypto \
+             -I$(srctree)/$(src)/hal/phydm \
+             -I$(srctree)/$(src)/hal/phydm/halrf \
+             -I$(srctree)/$(src)/hal/phydm/rtl8812a \
+			 -I$(srctree)/$(src)/platform
+ccflags-y += -Daes_encrypt=realtek_internal_aes_encrypt
+# ccflags-y += -Drtw_sec_write_cam=rtw8812au_sec_write_cam
+
+
 #EXTRA_CFLAGS += -pedantic
 #EXTRA_CFLAGS += -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes
 
@@ -22,7 +35,7 @@ EXTRA_CFLAGS += -Wno-implicit-fallthrough
 #EXTRA_CFLAGS += -Wno-discarded-qualifiers
 
 # Activates Concurrent Mode if uncommented
-#EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE
+# EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE
 
 # Sets wireless regulatory (REGD) sourse to OS
 EXTRA_CFLAGS += -DCONFIG_REGD_SRC_FROM_OS
@@ -35,8 +48,8 @@ EXTRA_CFLAGS += -Wframe-larger-than=1648
 EXTRA_CFLAGS += -Wno-cast-function-type
 
 # gcc-13
-EXTRA_CFLAGS += -Wno-enum-int-mismatch
-EXTRA_CFLAGS += -Wno-stringop-overread
+# EXTRA_CFLAGS += -Wno-enum-int-mismatch
+# EXTRA_CFLAGS += -Wno-stringop-overread
 EXTRA_CFLAGS += -Wno-enum-conversion
 EXTRA_CFLAGS += -Wno-int-in-bool-context
 EXTRA_CFLAGS += -Wno-missing-prototypes
@@ -85,7 +98,7 @@ CONFIG_LED_ENABLE = y
 CONFIG_AP_MODE = y
 CONFIG_P2P = y
 CONFIG_MP_INCLUDED = n
-CONFIG_POWER_SAVING = y
+CONFIG_POWER_SAVING = n
 CONFIG_IPS_MODE = default
 CONFIG_LPS_MODE = default
 CONFIG_USB_AUTOSUSPEND = n
@@ -108,7 +121,7 @@ CONFIG_80211W = y
 CONFIG_REDUCE_TX_CPU_LOADING = n
 CONFIG_BR_EXT = y
 CONFIG_TDLS = y
-CONFIG_WIFI_MONITOR = n
+CONFIG_WIFI_MONITOR = y
 CONFIG_MCC_MODE = n
 CONFIG_APPEND_VENDOR_IE_ENABLE = n
 CONFIG_RTW_NAPI = y
@@ -123,7 +136,7 @@ CONFIG_RTW_UP_MAPPING_RULE = tos
 CONFIG_RTW_MBO = n
 ########################## Android ###########################
 # CONFIG_RTW_ANDROID - 0: no Android, 4/5/6/7/8/9/10/11 : Android version
-CONFIG_RTW_ANDROID = 0
+CONFIG_RTW_ANDROID = 11
 
 ifeq ($(shell test $(CONFIG_RTW_ANDROID) -gt 0; echo $$?), 0)
 EXTRA_CFLAGS += -DCONFIG_RTW_ANDROID=$(CONFIG_RTW_ANDROID)
@@ -133,7 +146,7 @@ endif
 CONFIG_RTW_DEBUG = y
 # default log level is _DRV_INFO_ = 4,
 # please refer to "How_to_set_driver_debug_log_level.doc" to set the available level.
-CONFIG_RTW_LOG_LEVEL = 0
+CONFIG_RTW_LOG_LEVEL = 4
 
 # enable /proc/net/rtlxxxx/ debug interfaces
 CONFIG_PROC_DEBUG = n
@@ -2508,7 +2521,7 @@ obj-$(CONFIG_RTL8812AU) := $(MODULE_NAME).o
 
 else
 
-export CONFIG_RTL8812AU = m
+export CONFIG_RTL8812AU = y
 
 all: modules
 
