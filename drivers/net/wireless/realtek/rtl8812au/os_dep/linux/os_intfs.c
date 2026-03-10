@@ -2585,6 +2585,10 @@ u8 rtw_init_default_value(_adapter *padapter)
 	padapter->tx_amsdu_rate = 400;
 #endif
 	padapter->driver_tx_max_agg_num = 0xFF;
+	/* Disable USB autosuspend/LPM for SM8475 via found field */
+    	padapter->registrypriv.usbss_enable = 0;
+    	/* Force LPS level to 0 (Active) */
+    	padapter->registrypriv.lps_level = 0;
 #ifdef DBG_RX_COUNTER_DUMP
 	padapter->dump_rx_cnt_mode = 0;
 	padapter->drv_rx_cnt_ok = 0;

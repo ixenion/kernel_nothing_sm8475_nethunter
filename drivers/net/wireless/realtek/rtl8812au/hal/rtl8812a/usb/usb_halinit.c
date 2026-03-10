@@ -306,13 +306,22 @@ static u32 _InitPowerOn_8812AU(_adapter *padapter)
 	u16	u2btmp = 0;
 	u8	u1btmp = 0;
 	u8	bMacPwrCtrlOn = _FALSE;
+	struct dvobj_priv *pdvobj = adapter_to_dvobj(padapter);
+    //struct usb_device *udev = dvobj_to_usbdev(pdvobj);
+    struct usb_device *udev = (struct usb_device *)pdvobj->pusbdev;
 	/* HW Power on sequence */
 
 	rtw_hal_get_hwreg(padapter, HW_VAR_APFM_ON_MAC, &bMacPwrCtrlOn);
 	if (bMacPwrCtrlOn == _TRUE)
 		return _SUCCESS;
 
-	if (IS_VENDOR_8821A_MP_CHIP(padapter)) {
+	/* TP-Link Archer T2U Plus v3 (0x2357:0x011f) needs 8821A power flow */
+	if ((udev->descriptor.idVendor == 0x2357) && (udev->descriptor.idProduct == 0x011f)) {
+		if (!HalPwrSeqCmdParsing(padapter, PWR_CUT_ALL_MSK, PWR_FAB_ALL_MSK, PWR_INTF_USB_MSK, Rtl8821A_NIC_ENABLE_FLOW)) {
+			RTW_ERR("%s: run 8821A power on flow fail for T2U Plus v3\n", __func__);
+			return _FAIL;
+		}
+	} else if (IS_VENDOR_8821A_MP_CHIP(padapter)) {
 		/* HW Power on sequence */
 		if (!HalPwrSeqCmdParsing(padapter, PWR_CUT_A_MSK, PWR_FAB_ALL_MSK, PWR_INTF_USB_MSK, Rtl8821A_NIC_ENABLE_FLOW)) {
 			RTW_ERR("%s: run power on flow fail\n", __func__);

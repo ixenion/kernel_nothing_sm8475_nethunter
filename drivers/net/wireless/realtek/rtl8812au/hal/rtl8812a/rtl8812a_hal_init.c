@@ -647,7 +647,7 @@ FirmwareDownload8812(
 	if (_SUCCESS != rtStatus)
 		goto fwdl_stat;
 
-	rtStatus = _FWFreeToGo8812(Adapter, 10, 200);
+	rtStatus = _FWFreeToGo8812(Adapter, 10, 500);
 	if (_SUCCESS != rtStatus)
 		goto fwdl_stat;
 

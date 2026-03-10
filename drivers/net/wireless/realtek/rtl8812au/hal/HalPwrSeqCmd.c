@@ -113,8 +113,12 @@ u8 HalPwrSeqCmdParsing(
 				if (bHWICSupport && offset == 0x06) {
 					flag = 0;
 					maxPollingCnt = 100000;
-				} else
-					maxPollingCnt = 5000;
+				} else {
+					/* Increase polling timeout for USB devices (e.g., Archer T2U Plus v3) */
+					/* Some devices need more time to stabilize during power-on */
+					/* For SM8475 and 8821A-based devices, increase timeout significantly */
+					maxPollingCnt = 100000;
+				}
 
 #ifdef CONFIG_GSPI_HCI
 				if (GET_PWR_CFG_BASE(PwrCfgCmd) == PWR_BASEADDR_SDIO)
