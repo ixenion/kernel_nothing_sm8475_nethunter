@@ -5,6 +5,8 @@
 #ifndef __RTK_PCI_H_
 #define __RTK_PCI_H_
 
+#include "main.h"
+
 #define RTK_DEFAULT_TX_DESC_NUM 128
 #define RTK_BEQ_TX_DESC_NUM	256
 
@@ -35,6 +37,7 @@
 #define RTK_PCIE_LINK_CFG	0x0719
 #define BIT_CLKREQ_SW_EN	BIT(4)
 #define BIT_L1_SW_EN		BIT(3)
+#define BIT_CLKREQ_N_PAD	BIT(0)
 #define RTK_PCIE_CLKDLY_CTRL	0x0725
 
 #define BIT_PCI_BCNQ_FLAG	BIT(4)
@@ -49,6 +52,7 @@
 #define RTK_PCI_RXBD_DESA_MPDUQ	0x338
 
 #define TRX_BD_IDX_MASK		GENMASK(11, 0)
+#define TRX_BD_HW_IDX_MASK	GENMASK(27, 16)
 
 /* BCNQ is specialized for rsvd page, does not need to specify a number */
 #define RTK_PCI_TXBD_NUM_H2CQ	0x1328
@@ -140,6 +144,12 @@
 /* IMR 3 */
 #define IMR_H2CDOK		BIT(16)
 
+enum rtw_pci_flags {
+	RTW_PCI_FLAG_NAPI_RUNNING,
+
+	NUM_OF_RTW_PCI_FLAGS,
+};
+
 /* one element is reserved to know if the ring is closed */
 static inline int avail_desc(u32 wp, u32 rp, u32 len)
 {
@@ -193,24 +203,83 @@ struct rtw_pci_rx_ring {
 
 #define RX_TAG_MAX	8192
 
+struct rtw_pci;
+
+struct rtw_pci_gen {
+	int (*init_tx_ring)(struct rtw_dev *rtwdev,
+			    struct rtw_pci_tx_ring *tx_ring,
+			    u8 desc_size, u32 len);
+	int (*reset_rx_desc)(struct rtw_dev *rtwdev, struct sk_buff *skb,
+			     struct rtw_pci_rx_ring *rx_ring, u32 idx,
+			     u32 desc_sz);
+	int (*reset)(struct rtw_dev *rtwdev);
+	void (*flush_queue)(struct rtw_dev *rtwdev, u8 pci_q, bool drop);
+	void (*tx_kick_off_queue)(struct rtw_dev *rtwdev,
+				  enum rtw_tx_queue_type queue);
+	int (*tx_write_data)(struct rtw_dev *rtwdev,
+			     struct rtw_tx_pkt_info *pkt_info,
+			     struct sk_buff *skb,
+			     enum rtw_tx_queue_type queue);
+	void (*kick_beacon_queue)(struct rtw_dev *rtwdev);
+	void (*tx_isr)(struct rtw_dev *rtwdev, struct rtw_pci *rtwpci,
+		       u8 hw_queue);
+	int (*get_hw_rx_ring_nr)(struct rtw_dev *rtwdev,
+				 struct rtw_pci *rtwpci);
+	u32 (*rx_napi)(struct rtw_dev *rtwdev, struct rtw_pci *rtwpci,
+		       u8 hw_queue, u32 limit);
+	void (*clkreq_set)(struct rtw_dev *rtwdev, bool enable);
+	void (*aspm_set)(struct rtw_dev *rtwdev, bool enable);
+
+	u32 irq_mask[4];
+};
+
 struct rtw_pci {
 	struct pci_dev *pdev;
+	const struct rtw_pci_gen *gen;
 
 	/* Used for PCI interrupt. */
 	spinlock_t hwirq_lock;
-	/* Used for PCI TX queueing. */
+	/* Used for PCI TX ring/queueing, and enable INT. */
 	spinlock_t irq_lock;
-	u32 irq_mask[4];
 	bool irq_enabled;
+	bool running;
+
+	/* napi structure */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	struct net_device *netdev;
+#else
+	struct net_device netdev;
+#endif
+	struct napi_struct napi;
 
 	u16 rx_tag;
 	DECLARE_BITMAP(tx_queued, RTK_MAX_TX_QUEUE_NUM);
 	struct rtw_pci_tx_ring tx_rings[RTK_MAX_TX_QUEUE_NUM];
 	struct rtw_pci_rx_ring rx_rings[RTK_MAX_RX_QUEUE_NUM];
 	u16 link_ctrl;
+	atomic_t link_usage;
+	bool rx_no_aspm;
+	DECLARE_BITMAP(flags, NUM_OF_RTW_PCI_FLAGS);
 
 	void __iomem *mmap;
 };
+
+struct rtw_pci_info {
+	const struct rtw_chip_info *chip_info;
+	const struct rtw_pci_gen *pci_gen;
+};
+
+extern const struct dev_pm_ops rtw_pm_ops;
+extern const struct pci_error_handlers rtw_pci_err_handler;
+extern const struct rtw_pci_gen rtw_pci_gen_new;
+
+u8 rtw_pci_get_tx_qsel(struct sk_buff *skb, enum rtw_tx_queue_type queue);
+void rtw_pci_release_rsvd_page(struct rtw_pci *rtwpci,
+			       struct rtw_pci_tx_ring *ring);
+
+int rtw_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id);
+void rtw_pci_remove(struct pci_dev *pdev);
+void rtw_pci_shutdown(struct pci_dev *pdev);
 
 static inline u32 max_num_of_tx_queue(u8 queue)
 {
