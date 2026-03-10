@@ -32,7 +32,7 @@ Do you want to do a clean build? If unsure, say N. (Y/N) Y
 Do you want to modify .config? If unsure, say N. (Y/N) Y
 
 !!! Important: load nethunter ready config:
-Choose <load> and enter build_configs/v1.0.0/config
+Choose <load> and enter build_configs/v1.0.3/config
 this config contains basic nethunter setups and drivers for:
 
     Mediatek:
@@ -66,7 +66,7 @@ this config contains basic nethunter setups and drivers for:
     - RTL8188EE
     - RTL8192EE
     - RTL8192CU/RTL8188CU USB
-    - RTW8703B/RTW8703B_WOW/RTW8723D/RTW8812A/RTW8821A/RTW8814A/RTW8821C/RTW8822B/RTW8822C/RTW8822C_WOW USB
+    - RTW8812A/RTW8821A
     
     SDR:
     - AirSpy
