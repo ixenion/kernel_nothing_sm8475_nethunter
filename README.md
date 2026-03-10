@@ -65,8 +65,8 @@ this config contains basic nethunter setups and drivers for:
     - RTL8723BE PCIe
     - RTL8188EE
     - RTL8192EE
-    - RTL8821AE/RTL8812AE
     - RTL8192CU/RTL8188CU USB
+    - RTW8703B/RTW8703B_WOW/RTW8723D/RTW8812A/RTW8821A/RTW8814A/RTW8821C/RTW8822B/RTW8822C/RTW8822C_WOW USB
     
     SDR:
     - AirSpy
@@ -134,5 +134,61 @@ $ dmesg | grep "rt2"
 [17527.244782] [T15235] ieee80211 phy4: rt2x00lib_request_firmware: Error - Failed to request Firmware
 ```
 
-Firmware (installed through Magisk)
-https://github.com/rithvikvibhu/nh-magisk-wifi-firmware
+Use firmware from releases, it includes:
+```text
+nh-magisk-wifi-firmware-2.0.5
+
+.
+├── ar7010.fw
+├── ar7010_1_1.fw
+├── ath9k_htc
+│   ├── htc_7010-1.4.0.fw
+│   └── htc_9271-1.4.0.fw
+├── brcm
+│   ├── bcm43xx-0.fw
+│   ├── bcm43xx_hdr-0.fw
+│   ├── brcmfmac4335-sdio.bin
+│   ├── brcmfmac4339-sdio.bin
+│   └── brcmfmac4354-sdio.bin
+├── carl9170-1.fw
+├── htc_9271.fw
+├── mt7601u.bin
+├── rt2561.bin
+├── rt2561s.bin
+├── rt2661.bin
+├── rt2860.bin
+├── rt2870.bin
+├── rt3070.bin
+├── rt3071.bin
+├── rt3290.bin
+├── rt73.bin
+├── rtlwifi
+│   ├── rtl8188eufw.bin
+│   ├── rtl8188fufw.bin
+│   ├── rtl8192cfw.bin
+│   ├── rtl8192cfwU.bin
+│   ├── rtl8192cfwU_B.bin
+│   ├── rtl8192cufw.bin
+│   ├── rtl8192cufw_A.bin
+│   ├── rtl8192cufw_B.bin
+│   ├── rtl8192cufw_TMSC.bin
+│   ├── rtl8192defw.bin
+│   ├── rtl8192eefw.bin
+│   ├── rtl8192eu_nic.bin
+│   ├── rtl8192sefw.bin
+│   ├── rtl8821aefw.bin
+│   ├── rtl8821aefw_wowlan.bin
+│   └── rtl8822befw.bin
+└── rtw88
+    ├── rtw8703b_fw.bin
+    ├── rtw8703b_wow_fw.bin
+    ├── rtw8723d_fw.bin
+    ├── rtw8812a_fw.bin
+    ├── rtw8814a_fw.bin
+    ├── rtw8821a_fw.bin
+    ├── rtw8821c_fw.bin
+    ├── rtw8822b_fw.bin
+    ├── rtw8822c_fw.bin
+    └── rtw8822c_wow_fw.bin
+```
+(installed through Magisk)
